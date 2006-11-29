@@ -242,6 +242,11 @@ next_type(dest, source, is_nested)
 	    append(dest, "inout ");
 	    source = next_type(dest, source+1, 1);
 	    break;
+	
+	case 'L': /* lazy */
+	    append(dest, "lazy ");
+	    source = next_type(dest, source+1, 1);
+	    break;
 
 	case 'C': /* class */
 	case 'S': /* struct */
