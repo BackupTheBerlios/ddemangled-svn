@@ -35,6 +35,7 @@
 #else /* not DEMANGLE_D_USE_LIBIBERY */
 
 #define string_t	DD_(string_t)
+#define string_t_r	DD_(string_t_r)
 #define new_string	DD_(new_string)
 #define append_n	DD_(append_n)
 #define append_c	DD_(append_c)
@@ -48,7 +49,9 @@ typedef struct{
 	size_t	used;
 	char*	str;
 	size_t	len;
-}* string_t;
+} string_t_r;
+
+typedef string_t_r* string_t;
 
 string_t new_string(void);
 

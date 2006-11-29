@@ -38,7 +38,7 @@
 string_t
 new_string(void)
 {
-    string_t str = xmalloc(sizeof(string_t));
+    string_t str = xmalloc(sizeof(string_t_r));
     str->used = 0;
     str->len = 128;
     str->str = xmalloc(str->len);
