@@ -29,34 +29,31 @@
  *
  */
 
-#ifdef DEMANGLE_D_REQUIRE_error
+#ifdef DEMANGLE_D_STANDALONE
 #include "parser.h"
 #include "util.h"
 
 int
 main(int argc, char** argv)
 {
-	int i;
-	if(argc < 2){
-		xfprintf(stderr,
-			"pluggable D d-demangler by Thomas Kuehne <thomas@kuehne.cn> "
-			"($Date$)\n");
-		if(argc > 0){
-			xfprintf(stderr, "%s <mangledSymbol_1> [<mangledSymbol_2> ...]\n", argv[0]);
-		}else{
-			xfprintf(stderr, "dmangle_d <mangledSymbol_1> [<mangledSymbol_2> ...]\n");
-		}
-		return (EXIT_FAILURE);
-	}
-	for(i = 1; i < argc; i++){
-		char* demangled = DD_(demangle_d)(argv[i]);
-		if(1 > xprintf("%s\t%s\n", argv[i], demangled)){
-			xperror(NULL);
-		}
-		if(demangled){
-			xfree(demangled);
-		}
-	}
-	return (EXIT_SUCCESS);
+   int i;
+   if (argc < 2)
+     {
+      xfprintf(stderr,
+         _("pluggable D d-demangler by Thomas Kuehne <thomas@kuehne.cn> (%s)\n"),
+         "$Date$");
+      xfprintf(stderr, _("%s <mangledSymbol_1> [<mangledSymbol_2> ...]\n"),
+	    argc ? argv[0] :"demangle_d");
+      return (EXIT_FAILURE);
+     }
+   for (i = 1; i < argc; i++)
+     {
+      char* demangled = DD_(demangle_d)(argv[i]);
+      if (1 > xprintf(_("%s\t%s\n"), argv[i], demangled))
+         xperror(NULL);
+      if (demangled)
+         xfree(demangled);
+     }
+   return (EXIT_SUCCESS);
 }
 #endif /* DEMANGLE_D_STANDALONE */

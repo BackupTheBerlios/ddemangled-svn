@@ -23,9 +23,6 @@ Usage: stand alone
 Usage: plugin
 ---------------------
 
-gdb: - )
-valgrind: - )
-
 1) adapt config.h to your system
 
 2) include demangle.c in your build system
@@ -54,7 +51,7 @@ TODO
 ---------------------
 
 	* better output for symbols in nested types:
-		_staticCtorFZv3Ali5_ctorFiZC_D1b11_staticCtorFZv3Ali5innerFiZi
+		_D1a11_staticCtorFZv1A11_staticCtorFZv5innerFHfeZHia
 	
 	* handle "special" names:
 		_init__D1b11_staticCtorFZv3Al

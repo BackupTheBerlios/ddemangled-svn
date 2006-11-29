@@ -13,10 +13,10 @@
 
 #include <stddef.h> /* size_t */
 
-#define	xstrlen		VG_(strlen)
-#define	xstrncmp	VG_(strncmp)
+#define xstrlen		VG_(strlen)
+#define xstrncmp	VG_(strncmp)
 #define xsnprintf	VG_(snprintf)
-#define	xisdigit	ISDIGIT
+#define xisdigit	ISDIGIT
 #define DEMANGLE_D_REQUIRE_ISDIGIT 1
 #define xisxdigit	ISXDIGIT
 #define DEMANGLE_D_REQUIRE_ISXDIGIT 1
@@ -53,8 +53,8 @@
 #include <stddef.h> /* size_t */
 
 #include <string.h>
-#define	xstrlen		strlen
-#define	xstrncmp	strncmp
+#define xstrlen		strlen
+#define xstrncmp	strncmp
 
 #include <stdlib.h>
 #define xabort		abort
@@ -63,7 +63,7 @@
 #define xsnprintf	snprintf
 
 #include <ctype.h>
-#define	xisdigit	isdigit
+#define xisdigit	isdigit
 #define xisxdigit	isxdigit
 
 #define xasci2hex	ASCI2HEX
@@ -71,6 +71,10 @@
 
 
 #endif /* not DEMANGLE_D_IN_VALGRIND && not DEMANGLE_D_IN_GDB */
+
+#ifndef _LIBINTL_H
+#define _(str)		str
+#endif
 
 /* helper macros */
 

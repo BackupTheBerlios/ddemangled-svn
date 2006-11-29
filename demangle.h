@@ -16,6 +16,6 @@
  * 	the caller is responsible to
  * 	free input and output
  */
-char* DD_(demangle_d)(char* source);
+char* DD_(demangle_d)(char*);
 
 #endif /* DEMANGEL_D_DEMANGLE_H */

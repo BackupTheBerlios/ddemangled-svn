@@ -4,12 +4,18 @@
 #include "config.h"
 #include "string.h"
 
-char* DD_(nextType)(DD_(string_t)* dest, char* raw, int is_nested);
+#define next_type		DD_(next_type)
+#define interprete_template	DD_(interprete_template)
+#define parse_real		DD_(parse_real)
+#define parse_function		DD_(parse_function)
+#define demangle_d		DD_(demangle_d)
 
-void DD_(interpreteTemplate)(DD_(string_t)* dest, char* raw);
+char* next_type(string_t dest, char* raw, int is_nested);
 
-char* DD_(parseReal)(DD_(string_t)* dest, char* raw);
+void interprete_template(string_t dest, char* raw);
 
-char* DD_(parseFunction)(DD_(string_t)* dest, char* raw, char* name, int is_nested);
+char* parse_real(string_t dest, char* raw);
+
+char* parse_function(string_t dest, char* raw, char* name, int is_nested);
 
 #endif /* DEMANGLE_D_PARSER_H */

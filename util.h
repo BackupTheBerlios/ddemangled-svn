@@ -35,10 +35,10 @@
 /* xfree */
 
 #include <string.h>
-#define xmemcpy         memcpy
-#define xmemmove        memmove
-#define xstrndup        strndup
-#define xstrtol_10(n,p) strtol((n), (p), 10)
+#define xmemcpy		memcpy
+#define xmemmove	memmove
+#define xstrndup	strndup
+#define xstrtol_10(n,p)	strtol((n), (p), 10)
 
 #else  /* not DEMANGLE_D_IN_VALGRIND && not DEMANGLE_D_IN_GDB */
 /* 'normal' libc */
@@ -49,19 +49,19 @@
 #if defined(__USE_GNU) || defined(_GNU_SOURCE)
 #define xstrndup	strndup
 #else
-#define xstrndup        DD_(strndup)
+#define xstrndup	DD_(strndup)
 #define DEMANGLE_D_REQUIRE_strndup 1
 #endif
 
 #define xstrtol_10(n,p) strtol((n), (p), 10)
 
-#define xmalloc         DD_(malloc)
+#define xmalloc		DD_(malloc)
 #define DEMANGLE_D_REQUIRE_malloc 1
-#define xrealloc        DD_(realloc)
+#define xrealloc	DD_(realloc)
 #define DEMANGLE_D_REQUIRE_realloc 1
-#define xmemmove        memmove
-#define xfree           free
-#define xmemcpy         memcpy
+#define xmemmove	memmove
+#define xfree		free
+#define xmemcpy		memcpy
 
 #ifdef DEMANGLE_D_STANDALONE
 #define DEMANGLE_D_REQUIRE_error 1
