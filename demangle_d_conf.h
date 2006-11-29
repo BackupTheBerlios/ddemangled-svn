@@ -1,9 +1,7 @@
 #if !(DEMANGLE_D_CONF_H)
 #define DEMANGLE_D_CONF_H 1
 
-#if defined(DEMANGLE_D_STANDALONE)
-#define DEMANGLE_D_STANDALONE 1
-#endif
+#include "demangle_d.h"
 
 #if (DEMANGLE_D_IN_VALGRIND)
 
@@ -11,26 +9,27 @@
 
 #include <stddef.h> /* size_t */
 
-
 #define	xmemcpy		VG_(memcpy)
-#define xmemmove	y_memmove
+#define xmemmove	MEMMOVE
 #define	xstrlen		VG_(strlen)
 #define	xstrncmp	VG_(strncmp)
 #define xmalloc		VG_(malloc)
+#define DEMANGLE_D_REQUIRE_malloc 0
 #define xrealloc	VG_(realloc)
+#define DEMANGLE_D_REQUIRE_realloc 0
 #define xfree		VG_(free)
 #define xsnprintf	VG_(snprintf)
-#define	xisdigit	y_isdigit
-#define xisxdigit	y_isxdigit
-#define xasci2hex	y_asci2hex
+#define	xisdigit	ISDIGIT
+#define xisxdigit	ISXDIGIT
+#define xasci2hex	ASCI2HEX
 
 #define DEMANGLE_D_REQUIRE_strtol_10 1
 #define xstrtol_10	DD_(strtol_10)
 
-
 #else
 
 /* "normal" libc */
+#define DEMANGLE_D_IN_VALGRIND 0
 
 #include <string.h>
 #define	xmemcpy		memcpy
@@ -46,6 +45,7 @@
 #define xfree		free
 #define xabort		abort
 #define xstrtol_10(n,p)	strtol((n), (p), 10)
+#define DEMANGLE_D_REQUIRE_strtol_10 0
 
 #include <stdio.h>
 #define xsnprintf	snprintf
@@ -54,18 +54,21 @@
 #define	xisdigit	isdigit
 #define xisxdigit	isxdigit
 
-#define xasci2hex	y_asci2hex
+#define xasci2hex	ASCI2HEX
 
 #if (DEMANGLE_D_STANDALONE)
 #define xprintf		printf
 #define xperror		perror
+#define xfprintf	fprintf
+#else
+#define DEMANGLE_D_STANDALONE 0
 #endif
 
 #endif
 
-/* helpers */
+/* helper macros */
 
-#define y_memmove(dest, src, len) \
+#define MEMMOVE(dest, src, len) \
 { \
 	if(((dest < src) && (dest + len < src)) \
 		|| (((src < dest) && (src + len < dest)))) \
@@ -80,15 +83,15 @@
 	} \
 }
 
-#define y_isdigit(c) (('0' <= (c)) && ((c) <= '9'))
+#define ISDIGIT(c) (('0' <= (c)) && ((c) <= '9'))
 
-#define y_isxdigit(c) ( \
+#define ISXDIGIT(c) ( \
 		(('0' <= (c)) && ((c) <= '9')) \
 		|| (('a' <= (c)) && ((c) <= 'f')) \
 		|| (('A' <= (c)) && ((c) <= 'F')) \
 		)
 
-#define y_asci2hex(c) \
+#define ASCI2HEX(c) \
 	( \
 	 	('a' <= (c) && (c) <= 'f') \
 		? \

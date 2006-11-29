@@ -1,5 +1,5 @@
 /*
- * pluggable D de-mangler
+ * demangle_d.c - pluggable D de-mangler
  *
  * Copyright 2006 Thomas Kuehne <thomas@kuehne.cn>
  *
@@ -41,7 +41,10 @@
 #include "demangle_d_conf.h"
 #include "demangle_d_internal.h"
 
-char* DD_(strndup)(const char* source, size_t len){
+/* copy len first bytes into a newly allocated buffer */
+char*
+DD_(strndup)(const char* source, size_t len)
+{
 	char* dest;
 	dest = xmalloc(len+1);
 	xmemcpy(dest, source, len);
@@ -50,7 +53,10 @@ char* DD_(strndup)(const char* source, size_t len){
 }
 
 #if (DEMANGLE_D_REQUIRE_strtol_10)
-long int xstrtol_10(char* src, char** endptr){
+/* convert a string to a long integer using base 10 */
+long int
+xstrtol_10(char* src, char** endptr)
+{
 	long int value;
 	int sign;
 
@@ -80,7 +86,9 @@ long int xstrtol_10(char* src, char** endptr){
 #endif
 
 #if (DEMANGLE_D_REQUIRE_malloc)
-void* DD_(malloc)(size_t len){
+void*
+DD_(malloc)(size_t len)
+{
 	void* ptr;
 	ptr = malloc(len);
 	if(!ptr){
@@ -92,7 +100,9 @@ void* DD_(malloc)(size_t len){
 #endif
 
 #if (DEMANGLE_D_REQUIRE_realloc)
-void* DD_(realloc)(void* ptr, size_t len){
+void*
+DD_(realloc)(void* ptr, size_t len)
+{
 	ptr = realloc(ptr, len);
 	if(!ptr){
 		perror("DD_(realloc)");
@@ -102,8 +112,10 @@ void* DD_(realloc)(void* ptr, size_t len){
 }
 #endif
 
-DD_(String)* DD_(new_String)(void){
-	DD_(String)* str = xmalloc(sizeof(DD_(String)));
+DD_(string_t)*
+DD_(new_string)(void)
+{
+	DD_(string_t)* str = xmalloc(sizeof(DD_(string_t)));
 	str->used = 0;
 	str->len = 128;
 	str->str = xmalloc(str->len);
@@ -111,7 +123,9 @@ DD_(String)* DD_(new_String)(void){
 	return str;
 }
 
-void DD_(append_n)(DD_(String)* dest, const char* source, size_t len){
+void
+DD_(append_n)(DD_(string_t)* dest, const char* source, size_t len)
+{
 	size_t new_len = dest->used + len + 1;
 	if(new_len > dest->len){
 		dest->len = (size_t)(new_len * 1.5);
@@ -122,7 +136,9 @@ void DD_(append_n)(DD_(String)* dest, const char* source, size_t len){
 	dest->str[dest->used] = '\x00';
 }
 
-void DD_(append_c)(DD_(String)* dest, char source){
+void
+DD_(append_c)(DD_(string_t)* dest, char source)
+{
 	size_t new_len = dest->used + 2;
 	if(new_len > dest->len){
 		dest->len = (size_t)(new_len * 1.5);
@@ -132,11 +148,15 @@ void DD_(append_c)(DD_(String)* dest, char source){
 	dest->str[dest->used] = '\x00';
 }
 
-void DD_(append)(DD_(String)* dest, const char* source){
+void
+DD_(append)(DD_(string_t)* dest, const char* source)
+{
 	DD_(append_n)(dest, source, xstrlen(source));
 }
 
-void DD_(prepend_n)(DD_(String)* dest, const char* source, size_t len){
+void
+DD_(prepend_n)(DD_(string_t)* dest, const char* source, size_t len)
+{
 	size_t new_len = dest->used + len + 1;
 	if(new_len > dest->len){
 		dest->len = (size_t)(new_len * 1.5);
@@ -150,11 +170,14 @@ void DD_(prepend_n)(DD_(String)* dest, const char* source, size_t len){
 	dest->str[dest->used] = '\x00';
 }
 
-void DD_(prepend)(DD_(String)* dest, const char* source){
+void
+DD_(prepend)(DD_(string_t)* dest, const char* source)
+{
 	DD_(prepend_n)(dest, source, xstrlen(source));
 }
 
-void DD_(nestpend_n)(DD_(String)* dest, const char* source, size_t len,
+void
+DD_(nestpend_n)(DD_(string_t)* dest, const char* source, size_t len,
 		int is_nested)
 {
 	if(is_nested){
@@ -165,11 +188,16 @@ void DD_(nestpend_n)(DD_(String)* dest, const char* source, size_t len,
 	}
 }
 
-void DD_(nestpend)(DD_(String)* dest, const char* source, int is_nested){
+void
+DD_(nestpend)(DD_(string_t)* dest, const char* source, int is_nested)
+{
 	DD_(nestpend_n)(dest, source, xstrlen(source), is_nested);
 }
 
-char* DD_(nextType)(DD_(String)* dest, char* source, int is_nested){
+/* parse until the end of the next type */
+char*
+DD_(nextType)(DD_(string_t)* dest, char* source, int is_nested)
+{
 	if(!source || !source[0]){
 		return NULL;
 	}
@@ -178,8 +206,8 @@ char* DD_(nextType)(DD_(String)* dest, char* source, int is_nested){
 			&& xisdigit(source[2])
 			&& (source[2] != '0'))
 	{
-		DD_(String)* tmp;
-		tmp = DD_(new_String)();
+		DD_(string_t)* tmp;
+		tmp = DD_(new_string)();
 		source = DD_(nextType)(tmp, source + 2, 0);
 		if(dest->used && (dest->str[dest->used] != '.')){
 			DD_(append_c)(dest, '.');
@@ -315,8 +343,8 @@ char* DD_(nextType)(DD_(String)* dest, char* source, int is_nested){
 		}
 
 		case 'H': { /* associative array */
-			DD_(String)* aa;
-			aa = DD_(new_String)();
+			DD_(string_t)* aa;
+			aa = DD_(new_string)();
 			source = DD_(nextType)(aa, source+1, 1);
 			DD_(prepend)(aa, "[");
 			DD_(append)(aa, "]");
@@ -329,8 +357,8 @@ char* DD_(nextType)(DD_(String)* dest, char* source, int is_nested){
 		}
 
 		case 'D': { /* delegate */
-			DD_(String)* sig;
-			sig = DD_(new_String)();
+			DD_(string_t)* sig;
+			sig = DD_(new_string)();
 			source = DD_(parseFunction)(sig, source+1, NULL, 0);
 			DD_(nestpend_n)(dest, sig->str, sig->used, is_nested);
 			xfree(sig->str);
@@ -344,8 +372,8 @@ char* DD_(nextType)(DD_(String)* dest, char* source, int is_nested){
 					|| (source[1]=='R'))
 			{
 				/* function */
-				DD_(String)* sig;
-				sig = DD_(new_String)();
+				DD_(string_t)* sig;
+				sig = DD_(new_string)();
 				source = DD_(parseFunction)(sig, source+1,
 						"", 0);
 				DD_(nestpend_n)(dest, sig->str, sig->used,
@@ -384,8 +412,8 @@ char* DD_(nextType)(DD_(String)* dest, char* source, int is_nested){
 			char tmp = source[0];
 #endif /* DEMANGLE_D_VERBOSE */
 			if(!is_nested){
-				DD_(String)* sig;
-				sig = DD_(new_String)();
+				DD_(string_t)* sig;
+				sig = DD_(new_string)();
 				source = DD_(nextType)(sig, source+1, 0);
 				DD_(append)(sig, " ");
 #if (DEMANGLE_D_VERBOSE)
@@ -500,8 +528,8 @@ char* DD_(nextType)(DD_(String)* dest, char* source, int is_nested){
 		case 'V': /* Pascal function */
 		case 'R': /* C++ function */
 			if(!is_nested){
-				DD_(String)* id;
-				id = DD_(new_String)();
+				DD_(string_t)* id;
+				id = DD_(new_string)();
 				DD_(append_n)(id, dest->str, dest->used);
 				dest->used = 0;
 				dest->str[0] = '\x00';
@@ -524,7 +552,10 @@ char* DD_(nextType)(DD_(String)* dest, char* source, int is_nested){
 	return source;
 }
 
-char* DD_(parseReal)(DD_(String)* dest, char* source){
+/* parse a "real" template parameter */
+char*
+DD_(parseReal)(DD_(string_t)* dest, char* source)
+{
 	/* @BUG@ architecture dependent */
 	long double f;
 	size_t i;
@@ -554,15 +585,16 @@ format_error:
 	return source + 20;
 }
 
-
-char* DD_(parseFunction)(DD_(String)* dest, char* source, char* name,
+/* parse a function (including arguments and return type) */
+char*
+DD_(parseFunction)(DD_(string_t)* dest, char* source, char* name,
 		int is_nested)
 {
-	DD_(String)* fn_return;
-	DD_(String)* fn_param;
+	DD_(string_t)* fn_return;
+	DD_(string_t)* fn_param;
 
-	fn_return = DD_(new_String)();
-	fn_param = DD_(new_String)();
+	fn_return = DD_(new_string)();
+	fn_param = DD_(new_string)();
 
 	source++;
 
@@ -627,7 +659,10 @@ var_arg_param:
 	return source;
 }
 
-void DD_(interpreteTemplate)(DD_(String)* dest, char* raw){
+/* interprete a NULL terminated template symbol */
+void
+DD_(interpreteTemplate)(DD_(string_t)* dest, char* raw)
+{
 	char* tmp;
 	int first_arg = 1;
 	long int dataLen;
@@ -725,9 +760,24 @@ bug:
 	DD_(append)(dest, ")");
 }
 
-char* DD_(demangle_d)(char* source){
-	DD_(String)* dest;
-	DD_(String)* nested;
+/* demangle a D symbol
+ *
+ * input:
+ * 	a NULL terminated mangled symbol
+ *
+ * output:
+ * 	UTF-8 encoded demangled symbol
+ * 	or NULL if unable to demangle
+ *
+ * memory:
+ * 	the caller is responsible to
+ * 	free input and output
+ */
+static char*
+DD_(demangle_d)(char* source)
+{
+	DD_(string_t)* dest;
+	DD_(string_t)* nested;
 	char* back;
 
 	if((source[0] != '_') || (source[1] != 'D') || (!xisdigit(source[2]))
@@ -743,13 +793,13 @@ char* DD_(demangle_d)(char* source){
 		source += 2;
 	}
 
-	dest = DD_(new_String)();
+	dest = DD_(new_string)();
 
 	source = DD_(nextType)(dest, source, 0);
 
 	while(source && source[0]){
 		/* nested symbols */
-		nested = DD_(new_String)();
+		nested = DD_(new_string)();
 		DD_(append)(dest, ".");
 		source = DD_(nextType)(nested, source, 0);
 		DD_(append_n)(dest, nested->str, nested->used);
@@ -765,11 +815,20 @@ char* DD_(demangle_d)(char* source){
 }
 
 #if (DEMANGLE_D_STANDALONE)
-int main(int argc, char** argv){
+int
+main(int argc, char** argv)
+{
 	int i;
 	if(argc < 2){
-		xfprintf("D d-demangler $Date$ by Thomas Kuehne <thomas@kuehne.cn>\n");
-		return EXIT_FAILURE;
+		xfprintf(stderr,
+			"pluggable D d-demangler by Thomas Kuehne <thomas@kuehne.cn> "
+			"($Date$)\n");
+		if(argc > 0){
+			xfprintf(stderr, "%s <mangledSymbol_1> [<mangledSymbol_2> ...]\n", argv[0]);
+		}else{
+			xfprintf(stderr, "dmangle_d <mangledSymbol_1> [<mangledSymbol_2> ...]\n");
+		}
+		return (EXIT_FAILURE);
 	}
 	for(i = 1; i < argc; i++){
 		char* demangled = DD_(demangle_d)(argv[i]);
@@ -780,6 +839,6 @@ int main(int argc, char** argv){
 			xfree(demangled);
 		}
 	}
-	return EXIT_SUCCESS;
+	return (EXIT_SUCCESS);
 }
 #endif
