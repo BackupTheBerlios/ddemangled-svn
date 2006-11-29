@@ -1,5 +1,9 @@
 #ifndef DEMANGLE_D_DEMANGLE_H
-#define DEMANGEL_D_DEMANGLE_H 1
+#define DEMANGLE_D_DEMANGLE_H 1
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define DD_(str) demangle_d_##str
 
@@ -18,4 +22,8 @@
  */
 char* DD_(demangle_d)(char*);
 
-#endif /* DEMANGEL_D_DEMANGLE_H */
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* DEMANGLE_D_DEMANGLE_H */
