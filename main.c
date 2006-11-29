@@ -1,44 +1,35 @@
 /*
- * demangle_d.c - pluggable D de-mangler
+ * demangle_d - pluggable D de-mangler
+ * Copyright (C) 2006 Thomas Kuehne <thomas@kuehne.cn>
  *
- * Copyright 2006 Thomas Kuehne <thomas@kuehne.cn>
- *
- *
- * Eiffel Forum License, version 1
- *
- * Permission is hereby granted to use, copy, modify and/or distribute this
- * package, provided that:
- *
- *  - copyright notices are retained unchanged
- *
- *  - any distribution of this package, whether modified or not, includes
- *    this file
- *
- * Permission is hereby also granted to distribute binary programs which
- * depend on this package, provided that:
- *
- *  - if the binary program depends on a modified version of this package,
- *    you must publicly release the modified version of this package
- *
- * THIS PACKAGE IS PROVIDED "AS IS" AND WITHOUT WARRANTY. ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
- * EVENT SHALL THE AUTHORS BE LIABLE TO ANY PARTY FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ARISING IN ANY WAY
- * OUT OF THE USE OF THIS PACKAGE.
- *
- * 2006-04-19
- *	added GDB support
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  * 
- * 2006-04-17
- * 	added Valgrind support
+ * As a special exception, the copyright holders of this library give you
+ * permission to link this library with independent modules to produce an
+ * executable, regardless of the license terms of these independent modules,
+ * and to copy and distribute the resulting executable under terms of your
+ * choice, provided that you also meet, for each linked independent module,
+ * the terms and conditions of the license of that module. An independent
+ * module is a module which is not derived from or based on this library. If
+ * you modify this library, you may extend this exception to your version of
+ * the library, but you are not obligated to do so. If you do not wish to do
+ * so, delete this exception statement from your version.
  *
- * 2006-04-16
- * 	inital public release
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
 
-#ifdef DEMANGLE_D_STANDALONE
+#ifdef DEMANGLE_D_REQUIRE_error
 #include "parser.h"
 #include "util.h"
 
@@ -59,8 +50,8 @@ main(int argc, char** argv)
 	}
 	for(i = 1; i < argc; i++){
 		char* demangled = DD_(demangle_d)(argv[i]);
-		if(4 > xprintf("%s\t%s\n", argv[i], demangled)){
-			xperror("main");
+		if(1 > xprintf("%s\t%s\n", argv[i], demangled)){
+			xperror(NULL);
 		}
 		if(demangled){
 			xfree(demangled);

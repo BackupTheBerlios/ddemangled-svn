@@ -5,14 +5,14 @@ Author:
 	Thomas Kuehne <thomas@kuehne.cn>
 
 License:
-	Eiffel Forum License, version 1 (see license.txt)
+	GPL with linking exception (see license.txt)
 
 
 Usage: stand alone
 ---------------------
 
 1) compile:
-	cc -DDEMANGLE_D_STANDALONE -o demangle_d demangle_d.c
+	cc -DDEMANGLE_D_STANDALONE -o demangle_d demangle.c
 	
 2) run:
 	./demangle_d _D3std3utf6toUTF8FG4awZAa _D3std6string7sformatFAaYAa
@@ -23,12 +23,15 @@ Usage: stand alone
 Usage: plugin
 ---------------------
 
-1) adapt demangle_d_conf.h to your system
+gdb: - )
+valgrind: - )
 
-2) include demangle_d.c in your build system
+1) adapt config.h to your system
+
+2) include demangle.c in your build system
 
 3) demangle:
-	#include "demangle_d.h"
+	#include "demangle.h"
 
 	char* mangled;
 	char* demangled;
@@ -43,7 +46,7 @@ Usage: plugin
 	}
 
 optional:
-	adapt the DD_(str) macro in "demangle_d.h" to resolve potential
+	adapt the DD_(str) macro in "demangle.h" to resolve potential
 	name clashes in your object code
 
 	
