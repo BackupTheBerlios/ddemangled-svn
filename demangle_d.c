@@ -27,6 +27,9 @@
  * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ARISING IN ANY WAY
  * OUT OF THE USE OF THIS PACKAGE.
  *
+ * 2006-04-19
+ *	added GDB support
+ * 
  * 2006-04-17
  * 	added Valgrind support
  *
@@ -38,13 +41,7 @@
 #include "demangle_d_conf.h"
 #include "demangle_d_internal.h"
 
-unsigned char DD_(ascii2hex)(char c){
-	return (c >= 'a') ? (c - 'a' + 10) : ((c >= 'A') ? (c - 'A' + 10) :
-			(c - '0'));
-}
-
 char* DD_(strndup)(const char* source, size_t len){
-	/* lasy: doesn't use strlen */
 	char* dest;
 	dest = xmalloc(len+1);
 	xmemcpy(dest, source, len);
@@ -52,7 +49,8 @@ char* DD_(strndup)(const char* source, size_t len){
 	return dest;
 }
 
-long int DD_(strtol_10)(char* src, char** endptr){
+#if (DEMANGLE_D_REQUIRE_strtol_10)
+long int xstrtol_10(char* src, char** endptr){
 	long int value;
 	int sign;
 
@@ -79,6 +77,30 @@ long int DD_(strtol_10)(char* src, char** endptr){
 
 	return sign * value;
 }
+#endif
+
+#if (DEMANGLE_D_REQUIRE_malloc)
+void* DD_(malloc)(size_t len){
+	void* ptr;
+	ptr = malloc(len);
+	if(!ptr){
+		perror("DD_(malloc)");
+		xabort();
+	}
+	return ptr;
+}
+#endif
+
+#if (DEMANGLE_D_REQUIRE_realloc)
+void* DD_(realloc)(void* ptr, size_t len){
+	ptr = realloc(ptr, len);
+	if(!ptr){
+		perror("DD_(realloc)");
+		xabort();
+	}
+	return ptr;
+}
+#endif
 
 DD_(String)* DD_(new_String)(void){
 	DD_(String)* str = xmalloc(sizeof(DD_(String)));
@@ -358,7 +380,7 @@ char* DD_(nextType)(DD_(String)* dest, char* source, int is_nested){
 		case 'E': /* enum */
 		case 'T': /* typedef */
 		{
-#ifdef DEMANGLE_D_VERBOSE
+#if (DEMANGLE_D_VERBOSE)
 			char tmp = source[0];
 #endif /* DEMANGLE_D_VERBOSE */
 			if(!is_nested){
@@ -366,7 +388,7 @@ char* DD_(nextType)(DD_(String)* dest, char* source, int is_nested){
 				sig = DD_(new_String)();
 				source = DD_(nextType)(sig, source+1, 0);
 				DD_(append)(sig, " ");
-#ifdef DEMANGLE_D_VERBOSE
+#if (DEMANGLE_D_VERBOSE)
 				switch(tmp){
 					case 'C':
 						DD_(prepend)(sig, "class ");
@@ -386,7 +408,7 @@ char* DD_(nextType)(DD_(String)* dest, char* source, int is_nested){
 				xfree(sig->str);
 				xfree(sig);
 			}else{
-#ifdef DEMANGLE_D_VERBOSE
+#if (DEMANGLE_D_VERBOSE)
 				switch(tmp){
 					case 'C':
 						DD_(append)(dest, "class ");
@@ -418,7 +440,7 @@ char* DD_(nextType)(DD_(String)* dest, char* source, int is_nested){
 		case '9':
 		{
 			long int len;
-			len = DD_(strtol_10)(source, &source);
+			len = xstrtol_10(source, &source);
 			if(len >= 5 && (source[0] == '_') && (source[1] == '_')
 					&& (source[2] == 'T')
 					&& xisdigit(source[3])
@@ -435,7 +457,7 @@ char* DD_(nextType)(DD_(String)* dest, char* source, int is_nested){
 			while(source && xisdigit(source[0])
 					&& (source[0] != '0'))
 			{
-				len = DD_(strtol_10)(source, &source);
+				len = xstrtol_10(source, &source);
 				DD_(append_c)(dest, '.');
 				if(len >= 5 && (source[0] == '_')
 						&& (source[1] == '_')
@@ -517,8 +539,8 @@ format_error:
 			DD_(append_n)(dest, source, 20);
 			return source + 20;
 		}
-		c[i] = (DD_(ascii2hex)(source[i * 2]) << 4)
-			+ DD_(ascii2hex)(source[i * 2 + 1]);
+		c[i] = (xasci2hex(source[i * 2]) << 4);
+		c[i] |= xasci2hex(source[i * 2 + 1]);
 	}
 
 	buffer = xmalloc(64);
@@ -613,7 +635,7 @@ void DD_(interpreteTemplate)(DD_(String)* dest, char* raw){
 	/* id */
 	while(xisdigit(raw[0]) && (raw[0] != '0')){
 		long int len;
-		len = DD_(strtol_10)(raw, &raw);
+		len = xstrtol_10(raw, &raw);
 		DD_(append_n)(dest, raw, len);
 		raw += len;
 	}
@@ -670,7 +692,7 @@ integer_arg:
 				if(!xisdigit(raw[0])){
 					goto bug;
 				}
-				dataLen = DD_(strtol_10)(raw, &raw);
+				dataLen = xstrtol_10(raw, &raw);
 				if(raw[0] != '_'){
 					goto bug;
 				}
@@ -678,8 +700,8 @@ integer_arg:
 				DD_(append)(dest, "\"");
 				while(dataLen--){
 					if(xisxdigit(raw[0]) && xisxdigit(raw[1])){
-						DD_(append_c)(dest, (DD_(ascii2hex)(raw[0]) << 4)
-								+ DD_(ascii2hex)(raw[1]));
+						DD_(append_c)(dest, (xasci2hex(raw[0]) << 4)
+								+ xasci2hex(raw[1]));
 					}else{
 						DD_(append_c)(dest, '?');
 					}
@@ -711,7 +733,7 @@ char* DD_(demangle_d)(char* source){
 	if((source[0] != '_') || (source[1] != 'D') || (!xisdigit(source[2]))
 			|| (source[2] == '0'))
 	{
-		/* @BUG@ might be mangled with 'D' but hasn't 'D' linkage
+		/* %% @BUG@ might be mangled with 'D' but hasn't 'D' linkage
 		 * samples:
 		 * _aaApply10treewalkerFPS3aaA3aaAZi
 		 * _aaKeys9_aaKeys_xFPS3aaA3aaAZv
@@ -742,16 +764,22 @@ char* DD_(demangle_d)(char* source){
 	return back;
 }
 
-#if defined(DEMANGLE_D_STANDALONE)
+#if (DEMANGLE_D_STANDALONE)
 int main(int argc, char** argv){
 	int i;
+	if(argc < 2){
+		xfprintf("D d-demangler $Date$ by Thomas Kuehne <thomas@kuehne.cn>\n");
+		return EXIT_FAILURE;
+	}
 	for(i = 1; i < argc; i++){
 		char* demangled = DD_(demangle_d)(argv[i]);
-		xprintf("%s\t%s\n", argv[i], demangled);
+		if(4 > xprintf("%s\t%s\n", argv[i], demangled)){
+			xperror("main");
+		}
 		if(demangled){
 			xfree(demangled);
 		}
 	}
-	return 0;
+	return EXIT_SUCCESS;
 }
 #endif

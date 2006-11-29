@@ -1,8 +1,7 @@
-#ifndef DEMANGLE_D_INTERNAL_H
+#if !(DEMANGLE_D_INTERNAL_H)
 #define DEMANGLE_D_INTERNAL_H 1
 
 #include "demangle_d.h"
-
 
 typedef struct{
 	size_t	used;
@@ -34,5 +33,8 @@ char* DD_(parseFunction)(DD_(String)* dest, char* raw, char* name, int is_nested
 
 char* DD_(strndup)(const char* source, size_t len);
 long int DD_(strtol_10)(char* src, char** endptr);
+
+void* DD_(malloc)(size_t len);
+void* DD_(realloc)(void* ptr, size_t len);
 
 #endif /* DEMANGLE_D_INTERNAL_H */

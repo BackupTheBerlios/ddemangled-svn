@@ -1,10 +1,16 @@
-#ifndef DEMANGLE_D_CONF_H
+#if !(DEMANGLE_D_CONF_H)
 #define DEMANGLE_D_CONF_H 1
 
-#ifdef DEMANGLE_D_IN_VALGRIND
+#if defined(DEMANGLE_D_STANDALONE)
+#define DEMANGLE_D_STANDALONE 1
+#endif
+
+#if (DEMANGLE_D_IN_VALGRIND)
+
 /* valgrind - http://www.valgrind.org */
 
 #include <stddef.h> /* size_t */
+
 
 #define	xmemcpy		VG_(memcpy)
 #define xmemmove	y_memmove
@@ -16,6 +22,11 @@
 #define xsnprintf	VG_(snprintf)
 #define	xisdigit	y_isdigit
 #define xisxdigit	y_isxdigit
+#define xasci2hex	y_asci2hex
+
+#define DEMANGLE_D_REQUIRE_strtol_10 1
+#define xstrtol_10	DD_(strtol_10)
+
 
 #else
 
@@ -28,9 +39,13 @@
 #define	xstrncmp	strncmp
 
 #include <stdlib.h>
-#define xmalloc		malloc
-#define xrealloc	realloc
+#define xmalloc		DD_(malloc)
+#define DEMANGLE_D_REQUIRE_malloc 1
+#define xrealloc	DD_(realloc)
+#define DEMANGLE_D_REQUIRE_realloc 1
 #define xfree		free
+#define xabort		abort
+#define xstrtol_10(n,p)	strtol((n), (p), 10)
 
 #include <stdio.h>
 #define xsnprintf	snprintf
@@ -39,13 +54,16 @@
 #define	xisdigit	isdigit
 #define xisxdigit	isxdigit
 
-#ifdef DEMANGLE_D_STANDALONE
+#define xasci2hex	y_asci2hex
+
+#if (DEMANGLE_D_STANDALONE)
 #define xprintf		printf
+#define xperror		perror
 #endif
 
 #endif
 
-/* helpers for odd system */
+/* helpers */
 
 #define y_memmove(dest, src, len) \
 { \
@@ -64,9 +82,31 @@
 
 #define y_isdigit(c) (('0' <= (c)) && ((c) <= '9'))
 
-#define y_isxdigit(c) ( (('0' <= (c)) && ((c) <= '9')) \
+#define y_isxdigit(c) ( \
+		(('0' <= (c)) && ((c) <= '9')) \
 		|| (('a' <= (c)) && ((c) <= 'f')) \
-		|| (('A' <= (c)) && ((c) <= 'F')))
+		|| (('A' <= (c)) && ((c) <= 'F')) \
+		)
 
+#define y_asci2hex(c) \
+	( \
+	 	('a' <= (c) && (c) <= 'f') \
+		? \
+		((c) - 'a' + 10) \
+		: \
+		( \
+		 	('A' <= (c) && (c) <= 'F') \
+			? \
+			((c) - 'A' + 10) \
+			: \
+			( \
+			 	('0' <= (c) && (c) <= '9') \
+				? \
+				((c) - '0') \
+				: \
+				0 \
+			) \
+		) \
+	)
 
 #endif /* DEMANGLE_D_CONF_H */

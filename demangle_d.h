@@ -1,5 +1,5 @@
-#ifndef DEMANGLE_D_H
-#define DEMANGEL_D_H
+#if !(DEMANGLE_D_H)
+#define DEMANGEL_D_H 1
 
 #define DD_(str) demangle_d_##str
 
