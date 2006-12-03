@@ -62,6 +62,10 @@ next_type(dest, source, is_nested)
 	    nestpend(dest, "void", is_nested);
 	    source += 1;
 	    break;
+	case 'Z': /* runtime internals since DMD-0.176 */
+	    nestpend(dest, "const void", is_nested);
+	    source += 1;
+	    break;
 	case 'b': /* deprecated since DMD-0.148 (2006-02-25) */
 	    nestpend(dest, "bit", is_nested);
 	    source += 1;
@@ -670,18 +674,6 @@ demangle_d(source)
     if ((source[0] != '_') || (source[1] != 'D') || (!xisdigit(source[2]))
 	    || (source[2] == '0'))
       {
-	/* FIXME might be mangled with 'D' but hasn't 'D' linkage
-	 * samples:
-	 * _aaApply10treewalkerFPS3aaA3aaAZi
-	 * _aaKeys9_aaKeys_xFPS3aaA3aaAZv
-	 */
-	/* FIXME handle special cases:
-	 * _init__D1b11_staticCtorFZv3Al
-	 * _Class__D1b11_staticCtorFZv3Ali
-	 * _vtbl__D1b11_staticCtorFZv3Ali
-	 * _modctor_1b
-	 * _assert_1b
-	 */
 	return NULL;
       }
     else

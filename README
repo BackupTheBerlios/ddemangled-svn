@@ -52,11 +52,3 @@ TODO
 
 	* better output for symbols in nested types:
 		_D1a11_staticCtorFZv1A11_staticCtorFZv5innerFHfeZHia
-	
-	* handle "special" names:
-		_init__D1b11_staticCtorFZv3Al
-		_Class__D1b11_staticCtorFZv3Ali
-		_vtbl__D1b11_staticCtorFZv3Ali
-		_modctor_1b
-		_assert_1b
-
