@@ -442,8 +442,8 @@ format_error:
 	    append_n(dest, source, 20);
 	    return source + 20;
 	  }
-	c[i] = (xasci2hex(source[i * 2]) << 4);
-	c[i] |= xasci2hex(source[i * 2 + 1]);
+	c[9 - i] = (xasci2hex(source[i * 2 ]) << 4);
+	c[9 - i] |= xasci2hex(source[i * 2 + 1]);
       }
 
     buffer = xmalloc(64);
