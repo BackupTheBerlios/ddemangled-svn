@@ -16,6 +16,6 @@ void interprete_template(string_t dest, char* raw);
 
 char* parse_real(string_t dest, char* raw);
 
-char* parse_function(string_t dest, char* raw, char* name, int is_nested);
+char* parse_function(string_t dest, char* raw, char* name, int is_nested, int has_this_pointer);
 
 #endif /* DEMANGLE_D_PARSER_H */

@@ -39,6 +39,8 @@ char*
 next_type(dest, source, is_nested)
 	string_t dest; char* source; int is_nested;
 {
+    int has_this_pointer = 0;
+
     if (!source || !source[0])
 	return NULL;
 
@@ -56,8 +58,13 @@ next_type(dest, source, is_nested)
 	return source;
       }
 
+Lreevaluate:
     switch(source[0])
       {
+	case 'M': /* this pointer since DMD-0.177 */
+	    has_this_pointer = 1;
+	    source++;
+	    goto Lreevaluate;
 	case 'v':
 	    nestpend(dest, "void", is_nested);
 	    source += 1;
@@ -207,7 +214,7 @@ next_type(dest, source, is_nested)
 	  {
 	    string_t sig;
 	    sig = new_string();
-	    source = parse_function(sig, source+1, NULL, 0);
+	    source = parse_function(sig, source+1, NULL, 0, has_this_pointer);
 	    nestpend_n(dest, sig->str, sig->used, is_nested);
 	    xfree(sig->str);
 	    xfree(sig);
@@ -221,7 +228,7 @@ next_type(dest, source, is_nested)
 		/* function */
 		string_t sig;
 		sig = new_string();
-		source = parse_function(sig, source+1, "", 0);
+		source = parse_function(sig, source+1, "", 0, has_this_pointer);
 		nestpend_n(dest, sig->str, sig->used, is_nested);
 		xfree(sig->str);
 		xfree(sig);
@@ -388,12 +395,12 @@ next_type(dest, source, is_nested)
 		append_n(id, dest->str, dest->used);
 		dest->used = 0;
 		dest->str[0] = '\x00';
-		source = parse_function(dest, source, id->str, 0);
+		source = parse_function(dest, source, id->str, 0, has_this_pointer);
 		xfree(id->str);
 		xfree(id);
 	      }
 	    else
-		source = parse_function(dest, source, "", 1);
+		source = parse_function(dest, source, "", 1, has_this_pointer);
 	    break;
 
 	case '.':
@@ -461,8 +468,9 @@ format_error:
 /* Parse a function - including arguments and return type - and
    return a pointer to the first not interpreted character.  */
 char*
-parse_function(dest, source, name, is_nested)
+parse_function(dest, source, name, is_nested, has_this_pointer)
 	string_t dest; char* source; char* name; int is_nested;
+	int has_this_pointer;
 {
     string_t fn_return;
     string_t fn_param;
@@ -532,8 +540,14 @@ var_arg_param:
       {
 	append_c(dest, '(');
 	append_n(dest, fn_param->str, fn_param->used);
+	if (has_this_pointer)
+	  {
+	    append(dest, ", this");
+	  }
 	append_c(dest, ')');
       }
+    else if(has_this_pointer)
+	append(dest, "(this)");
     else
 	append(dest, "()");
 
