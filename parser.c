@@ -431,38 +431,94 @@ char*
 parse_real(dest, source)
 	string_t dest; char* source;
 {
-    /* FIXME architecture dependent */
-    long double f;
-    size_t i;
-    int tmp;
-    char* buffer;
-    unsigned char* c;
+    char buffer[64];
+    int index;
+    int digit_count;
+    long double result;
+    char* end;
+
+    if (strncmp(source, "NAN", 3) == 0)
+      {
+	append(dest, "NAN");
+	return source + 3;
+      }
+    else if (strncmp(source, "INF", 3) == 0)
+      {
+	append(dest, "INF");
+	return source + 3;
+      }
+    else if (strncmp(source, "NINF", 4) == 0)
+      {
+	append(dest, "-INF");
+	return source + 4;
+      }
+
+    index = 0;
+    digit_count = 0;
+
+    if (*source == 'N')
+      {
+	buffer[index++] = '-';
+	source++;
+      }
+
+    buffer[index++] = '0';
+    buffer[index++] = 'x';
     
-    c = (unsigned char*) &f;
-
-    for (i = 0; i < 10; i++)
+    while (xisxdigit(*source))
       {
-	if (!xisxdigit(source[i * 2]) || !xisxdigit(source[i * 2 + 1]))
-	  {
-format_error:
-	    append(dest, "0x");
-	    append_n(dest, source, 20);
-	    return source + 20;
-	  }
-	c[9 - i] = (xasci2hex(source[i * 2 ]) << 4);
-	c[9 - i] |= xasci2hex(source[i * 2 + 1]);
+	buffer[index++] = *source;
+	if (1 == digit_count++)
+	    buffer[index++] = '.';	 
+	source++;
       }
 
-    buffer = xmalloc(64);
-    tmp = xsnprintf(buffer, 64, "%Lf", f);
-    if (tmp < 1)
+    if (*source == 'P')
       {
-	xfree(buffer);
-	goto format_error;
+	buffer[index++] = *source;
+	source++;
       }
-    append_n(dest, buffer, tmp);
-    xfree(buffer);
-    return source + 20;
+    else
+      {
+	append(dest, " @bug@[3]{");
+	append(dest, source);
+	append_c(dest, '}');
+	return NULL;
+      }
+	
+    if (*source == 'N')
+      {
+	buffer[index++] = '-';
+	source++;
+      }
+    else
+      {
+	buffer[index++] = '+';      
+      }
+    
+    while (xisxdigit(*source))
+      {
+	buffer[index++] = *source;
+	source++;
+      }
+
+    buffer[index] = 0;
+
+    result = 0;
+    result = strtold(buffer, &end);
+    if (end && end == buffer + index)
+      {
+        snprintf(buffer, sizeof(buffer), "%Lf", result);
+	append(dest, buffer);
+      }
+    else
+      {
+	perror("strtold");      
+	append(dest, buffer);
+      }
+
+
+    return source;
 }
 
 /* Parse a function - including arguments and return type - and

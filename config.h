@@ -3,6 +3,10 @@
 
 #include "demangle.h"
 
+/* for propper strtold support */
+#undef _ISOC99_SOURCE 
+#define _ISOC99_SOURCE 1
+
 #undef DEMANGLE_D_REQUIRE_ISDIGIT
 #undef DEMANGLE_D_REQUIRE_ISXDIGIT
 #undef DEMANGLE_D_REQUIRE_ASCI2HEX
