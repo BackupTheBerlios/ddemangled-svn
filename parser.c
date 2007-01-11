@@ -74,7 +74,6 @@ Lreevaluate:
 	    source += 1;
 	    break;
 	case 'b':
-	case 'x':
 	    nestpend(dest, "bool", is_nested);
 	    source += 1;
 	    break;
