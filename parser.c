@@ -73,10 +73,7 @@ Lreevaluate:
 	    nestpend(dest, "const void", is_nested);
 	    source += 1;
 	    break;
-	case 'b': /* deprecated since DMD-0.148 (2006-02-25) */
-	    nestpend(dest, "bit", is_nested);
-	    source += 1;
-	    break;
+	case 'b':
 	case 'x':
 	    nestpend(dest, "bool", is_nested);
 	    source += 1;
