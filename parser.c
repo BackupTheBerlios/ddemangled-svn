@@ -1,6 +1,6 @@
 /*
  * demangle_d - pluggable D de-mangler
- * Copyright (C) 2006 Thomas Kuehne <thomas@kuehne.cn>
+ * Copyright (C) 2006-2007 Thomas Kuehne <thomas@kuehne.cn>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -764,15 +764,25 @@ demangle_d(source)
 {
     string_t dest;
     string_t nested;
-    char* back;
+    char* back = NULL;
+    int mac_hack = 0;
 
-    if ((source[0] != '_') || (source[1] != 'D') || (!xisdigit(source[2]))
-	    || (source[2] == '0'))
+    if ((source[0] == '_') && (source[1] == 'D') && (xisdigit(source[2]))
+	    && (source[2] != '0'))
       {
-	return NULL;
-      }
-    else
 	source += 2;
+      }
+#if defined(__APPLE__)
+    // additional leading underscore on Mac systems:
+    // http://d.puremagic.com/issues/show_bug.cgi?id=906
+    else if ((source[0] == '_') && (source[1] == '_') && (source[2] == 'D')
+	    && xisdigit(source[3]) && (source[3] != '0'))
+      {
+	source += 3;
+      }
+#endif
+    else
+	return NULL;
 
     dest = new_string();
 
